@@ -1,48 +1,49 @@
 """
-Database Schemas
+Database Schemas for Galaxy Planner
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Each Pydantic model corresponds to a MongoDB collection with the
+collection name as the lowercase class name.
 """
-
+from typing import Optional, Literal
 from pydantic import BaseModel, Field
-from typing import Optional
+from datetime import datetime
 
-# Example schemas (replace with your own):
+# Calendar notes for a specific date (YYYY-MM-DD)
+class Note(BaseModel):
+    date: str = Field(..., description="ISO date, e.g., 2025-01-31")
+    title: str = Field(..., description="Short note title")
+    content: Optional[str] = Field(None, description="Detail of the note")
 
-class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+# Todo items per specific date
+class Todo(BaseModel):
+    date: str = Field(..., description="ISO date, e.g., 2025-01-31")
+    text: str = Field(..., description="Task description")
+    done: bool = Field(False, description="Completion status")
 
-class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+# Finance records (income/expense)
+class Finance(BaseModel):
+    date: str = Field(..., description="ISO date, e.g., 2025-01-31")
+    type: Literal["income", "expense"] = Field(..., description="Record type")
+    amount: float = Field(..., ge=0, description="Amount of the record")
+    category: Optional[str] = Field(None, description="Category label")
+    note: Optional[str] = Field(None, description="Optional memo")
 
-# Add your own schemas here:
-# --------------------------------------------------
+# Photo library: store a title and an image data URL (base64) or remote URL
+class Photo(BaseModel):
+    title: Optional[str] = Field(None, description="Photo title")
+    src: str = Field(..., description="Data URL (base64) or remote URL")
+    date: Optional[str] = Field(None, description="Associated date")
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+# Dreams comes true list
+class Dream(BaseModel):
+    title: str = Field(..., description="Dream title")
+    description: Optional[str] = Field(None, description="Why it matters")
+    image: Optional[str] = Field(None, description="Image data URL or URL")
+    achieved: bool = Field(False, description="Whether achieved")
+
+# Reminders with datetime and optional link to a date
+class Reminder(BaseModel):
+    title: str = Field(..., description="Reminder title")
+    datetime_iso: str = Field(..., description="ISO datetime string")
+    message: Optional[str] = Field(None, description="Reminder message")
+    date: Optional[str] = Field(None, description="Related calendar date (YYYY-MM-DD)")
